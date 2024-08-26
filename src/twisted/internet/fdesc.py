@@ -21,29 +21,27 @@ else:
 from twisted.internet.main import CONNECTION_DONE, CONNECTION_LOST
 
 
-def setNonBlocking(fd):
-    """
-    Set the file description of the given file descriptor to non-blocking.
-    """
-    flags = fcntl.fcntl(fd, fcntl.F_GETFL)
-    flags = flags | os.O_NONBLOCK
-    fcntl.fcntl(fd, fcntl.F_SETFL, flags)
-
-
-def setBlocking(fd):
-    """
-    Set the file description of the given file descriptor to blocking.
-    """
-    flags = fcntl.fcntl(fd, fcntl.F_GETFL)
-    flags = flags & ~os.O_NONBLOCK
-    fcntl.fcntl(fd, fcntl.F_SETFL, flags)
-
-
 if fcntl is None:
     # fcntl isn't available on Windows.  By default, handles aren't
     # inherited on Windows, so we can do nothing here.
-    _setCloseOnExec = _unsetCloseOnExec = lambda fd: None
+    setNonBlocking = setBlocking = _setCloseOnExec = _unsetCloseOnExec = lambda fd: None
 else:
+
+    def setNonBlocking(fd):
+        """
+        Set the file description of the given file descriptor to non-blocking.
+        """
+        flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+        flags = flags | os.O_NONBLOCK
+        fcntl.fcntl(fd, fcntl.F_SETFL, flags)
+
+    def setBlocking(fd):
+        """
+        Set the file description of the given file descriptor to blocking.
+        """
+        flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+        flags = flags & ~os.O_NONBLOCK
+        fcntl.fcntl(fd, fcntl.F_SETFL, flags)
 
     def _setCloseOnExec(fd):
         """
